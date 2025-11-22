@@ -14,17 +14,22 @@ public class UserEntityConfiguration : IEntityTypeConfiguration<User>
         builder.Property(p => p.Email)
             .IsRequired()
             .HasColumnName("email")
-            .HasColumnType("citext");
+            .HasColumnType("citext")
+            .HasMaxLength(75);
 
         builder.Property(u => u.FirstName)
-            .HasColumnName("first_name")
             .IsRequired()
+            .HasColumnName("first_name")
             .HasColumnType("citext")
             .HasMaxLength(50);
 
-        builder.Property(u => u.LastName)
-            .HasColumnName("last_name")
+        builder.Property(p => p.ApiSecret)
             .IsRequired()
+            .HasColumnName("api_secret");
+
+        builder.Property(u => u.LastName)
+            .IsRequired()
+            .HasColumnName("last_name")
             .HasColumnType("citext")
             .HasMaxLength(50);
 
