@@ -23,7 +23,7 @@ public class TokenService(IConfiguration configuration) : ITokenService
         var claims = new List<Claim>
         {
             new (ClaimTypes.NameIdentifier, userId.ToString()),
-            new (ClaimTypes.Email, email))
+            new (ClaimTypes.Email, email)
         };
         //claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 

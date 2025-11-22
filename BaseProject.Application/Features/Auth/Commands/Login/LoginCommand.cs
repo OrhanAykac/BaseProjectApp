@@ -1,15 +1,17 @@
 ﻿using BaseProject.Application.Common.Abstract;
 using BaseProject.Application.Data;
 using BaseProject.Application.Utilities.Hashing;
+using BaseProject.Application.Utilities.Results;
 
 namespace BaseProject.Application.Features.Auth.Commands.Login;
 
-public record LoginCommand(string Email, string Password) : IRequest<LoginCommandResponse?>;
+public record LoginCommand(string Email, string Password) : IRequest<IDataResult<LoginCommandResponse?>>;
 
 
-internal sealed class LoginCommandHandler(IAppDbContext appDbContext, ITokenService tokenService) : IRequestHandler<LoginCommand, LoginCommandResponse?>
+internal sealed class LoginCommandHandler(IAppDbContext appDbContext, ITokenService tokenService)
+    : IRequestHandler<LoginCommand, IDataResult<LoginCommandResponse?>>
 {
-    public async ValueTask<LoginCommandResponse?> Handle(LoginCommand request, CancellationToken cancellationToken)
+    public async ValueTask<IDataResult<LoginCommandResponse?>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
         HashingHelper.CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
@@ -17,10 +19,8 @@ internal sealed class LoginCommandHandler(IAppDbContext appDbContext, ITokenServ
               .Where(u => u.Email == request.Email)
               .FirstOrDefaultAsync(cancellationToken);
 
-
-        //Results.Fail<LoginCommandResponse>("Invalid email or password.");
         if (user is null)
-            return null;
+            return Result.Fail<LoginCommandResponse>("Email or password is invalid.");
 
         bool verified = HashingHelper.VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt);
 
@@ -29,10 +29,10 @@ internal sealed class LoginCommandHandler(IAppDbContext appDbContext, ITokenServ
         {
             string token = tokenService.GenerateJwtToken(user.UserId, user.Email);
 
-            return new LoginCommandResponse(true, "Login successful.", token);
+            return Result.Success(new LoginCommandResponse(true, "Login successful.", token));
         }
 
-        return null;
+        return Result.Fail<LoginCommandResponse>("Email or password is invalid.");
 
     }
 }

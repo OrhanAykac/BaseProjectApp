@@ -1,6 +1,7 @@
 ﻿using BaseProject.Application;
 using BaseProject.Domain.Enums;
 using BaseProject.Infrastructure;
+using BaseProject.WebAPI.Endpoints;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 

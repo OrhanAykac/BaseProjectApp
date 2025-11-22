@@ -1,8 +1,8 @@
 ﻿using BaseProject.Application.Common.Abstract;
 
-namespace BaseProject.Application.Behaviors.Query;
+namespace BaseProject.Application.Behaviors;
 
-public class QueryCachingBehavior<TRequest, TResponse>(ICacheService cache) : IPipelineBehavior<TRequest, TResponse>
+public class CachingBehavior<TRequest, TResponse>(ICacheService cache) : IPipelineBehavior<TRequest, TResponse>
     where TRequest : ICacheableRequest<TResponse>
 {
     public async ValueTask<TResponse> Handle(TRequest message, MessageHandlerDelegate<TRequest, TResponse> next, CancellationToken c)

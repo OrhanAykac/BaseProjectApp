@@ -1,8 +1,10 @@
 ﻿using System.Diagnostics;
 
-namespace BaseProject.Application.Behaviors.Query;
-public sealed class QueryPerformanceBehavior<TRequest, TResponse>(Serilog.ILogger logger) : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : IBaseRequest
+namespace BaseProject.Application.Behaviors;
+
+public sealed class PerformanceBehavior<TRequest, TResponse>(Serilog.ILogger logger)
+    : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : class, IBaseCommand
 {
     private readonly Stopwatch _timer = new();
     public async ValueTask<TResponse> Handle(TRequest message, MessageHandlerDelegate<TRequest, TResponse> next, CancellationToken cancellationToken)
