@@ -16,7 +16,7 @@
 		<PackageReference Include="Microsoft.Extensions.Caching.Hybrid" Version="9.10.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.11" />
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="9.0.11" />
-
+		<PackageReference Include="BlobHelper" Version="4.1.6" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
 	</ItemGroup>
 

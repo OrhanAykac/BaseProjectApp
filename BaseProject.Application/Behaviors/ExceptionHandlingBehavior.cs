@@ -1,4 +1,4 @@
-﻿using BaseProject.Application.Utilities.Results;
+﻿using BaseProject.Application.Common.Results;
 
 namespace BaseProject.Application.Behaviors;
 

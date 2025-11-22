@@ -1,4 +1,4 @@
-﻿namespace BaseProject.Application.Utilities.Results;
+﻿namespace BaseProject.Application.Common.Results;
 
 public class Result : IResult
 {
@@ -6,21 +6,14 @@ public class Result : IResult
     public string Message { get; protected set; }
     public List<string> Errors { get; protected set; }
 
-    protected Result(bool isSuccess, string? message = null)
-    {
-        IsSuccess = isSuccess;
-        Message = message ?? string.Empty;
-        Errors = [];
-    }
-
-    protected Result(bool isSuccess, string? message, List<string>? errors)
+    protected Result(bool isSuccess = true, string? message = null, List<string>? errors = null)
     {
         IsSuccess = isSuccess;
         Message = message ?? string.Empty;
         Errors = errors ?? [];
     }
 
-    public static IResult Success() => new Result(true);
+    public static IResult Success() => new Result();
 
     public static IResult Success(string message) => new Result(true, message);
 
@@ -36,6 +29,13 @@ public class Result : IResult
 
     public static IDataResult<T> Success<T>(T data, string message) => new DataResult<T>(data, true, message);
 
+    public static IDataResult<T> Success<T>(T data, int pageIndex, int pageSize, int totalCount) =>
+        new PaggingDataResult<T>(data, pageIndex, pageSize, totalCount, true);
+
+    public static IDataResult<T> Success<T>(T data, int pageIndex, int pageSize, int totalCount, string message) =>
+    new PaggingDataResult<T>(data, pageIndex, pageSize, totalCount, true, message);
+
+
     public static IDataResult<T> Fail<T>() => new DataResult<T>(default!, false);
 
     public static IDataResult<T> Fail<T>(string message) => new DataResult<T>(default!, false, message);
@@ -49,15 +49,25 @@ public class DataResult<T> : Result, IDataResult<T>
 {
     public T Data { get; private set; }
 
-    internal DataResult(T data, bool isSuccess, string? message = null)
-        : base(isSuccess, message)
-    {
-        Data = data;
-    }
-
-    internal DataResult(T data, bool isSuccess, string? message, List<string>? errors)
+    internal DataResult(T data, bool isSuccess = true, string? message = null, List<string>? errors = null)
         : base(isSuccess, message, errors)
     {
         Data = data;
+    }
+}
+public class PaggingDataResult<T> : DataResult<T>, IPaggingDataResult<T>
+{
+    public int PageIndex { get; set; }
+    public int PageSize { get; set; }
+    public int TotalCount { get; set; }
+    public int TotalPages => (int)System.Math.Ceiling(TotalCount / (double)PageSize);
+
+    internal PaggingDataResult(
+        T data, int pageIndex, int pageSize, int totalCount, bool isSuccess = true, string? message = null, List<string>? errors = null)
+        : base(data, isSuccess, message, errors)
+    {
+        PageIndex = pageIndex;
+        PageSize = pageSize;
+        TotalCount = totalCount;
     }
 }

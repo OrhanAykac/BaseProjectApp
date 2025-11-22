@@ -1,8 +1,12 @@
 ﻿using BaseProject.Application.Common.Abstract;
 using BaseProject.Application.Data;
 using BaseProject.Domain.Enums;
+using BaseProject.Infrastructure.Cache;
 using BaseProject.Infrastructure.Logging.SerilogConfig;
 using BaseProject.Infrastructure.Persistance.Contexts;
+using BaseProject.Infrastructure.Storage;
+using BaseProject.Infrastructure.Storage.Cloudflare.ImageService;
+using BaseProject.Infrastructure.Storage.Cloudflare.StorageService;
 using BaseProject.Infrastructure.Utilities;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -18,39 +22,10 @@ public static class InfrastructureServices
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration, bool isProduction, AppService appService)
     {
-        services.AddLogger(configuration, isProduction, appService);
-
-
-        #region Cache config
-
-        if (isProduction)
-        {
-            var multiplexer = ConnectionMultiplexer.Connect(configuration.GetConnectionString("RedisConnection")!);
-            services.AddSingleton<IConnectionMultiplexer>(multiplexer);
-
-            services.AddStackExchangeRedisCache(options =>
-            {
-                options.ConnectionMultiplexerFactory = async () => await Task.FromResult(multiplexer);
-                options.InstanceName = configuration["Redis:InstanceName"];
-            });
-
-            services.AddDataProtection()
-            .PersistKeysToStackExchangeRedis(multiplexer, "DataProtection-Keys")
-            .SetApplicationName("BaseProject");
-        }
-
-        services.AddHybridCache(config =>
-        {
-            config.MaximumPayloadBytes = 1024 * 1024;
-            config.MaximumKeyLength = 1024;
-            config.DefaultEntryOptions = new HybridCacheEntryOptions
-            {
-                Expiration = TimeSpan.FromMinutes(10),
-                LocalCacheExpiration = TimeSpan.FromMinutes(5)
-            };
-        });
-
-        #endregion
+        services
+            .AddCache(configuration, appService, isProduction)
+            .AddLogger(configuration, isProduction, appService)
+            .AddDbContext(configuration, isProduction);
 
         services
             .AddHttpClient("CFImage", h =>
@@ -63,21 +38,25 @@ public static class InfrastructureServices
         })
             .AddStandardResilienceHandler();
 
+
+        services.AddScoped<CloudflareImageHelper>();
+        services.AddScoped<CloudflareObjectStorageHelper>();
+        services.AddScoped<IStorageService, StorageService>();
         services.AddSingleton<ITokenService, TokenService>();
 
-        //services.AddScoped<CloudflareImageHelper>();
-        //services.AddScoped<CloudflareObjectStorageHelper>();
-        //services.AddScoped<StorageService>();
-
-
+        return services;
+    }
+    private static IServiceCollection AddDbContext(this IServiceCollection services, IConfiguration configuration, bool isProduction)
+    {
         string connStr = configuration.GetConnectionString("DefaultConnection")!;
+
         services.AddDbContext<AppDbContextRO>(options =>
         {
             options.UseNpgsql(connStr)
             .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 
-            if (isProduction == false)
-                options.EnableSensitiveDataLogging(true);
+            if (!isProduction)
+                options.EnableSensitiveDataLogging();
 
             options.ConfigureWarnings(warnings =>
             {
@@ -88,12 +67,10 @@ public static class InfrastructureServices
 
         services.AddDbContext<AppDbContext>(options =>
         {
-            options
-            .UseNpgsql(connStr);
+            options.UseNpgsql(connStr);
 
-
-            if (isProduction == false)
-                options.EnableSensitiveDataLogging(true);
+            if (!isProduction)
+                options.EnableSensitiveDataLogging();
 
             options.ConfigureWarnings(warnings =>
             {
@@ -104,7 +81,39 @@ public static class InfrastructureServices
 
         services.AddScoped<IAppDbContext, AppDbContext>();
         services.AddScoped<IAppDbContextRO, AppDbContextRO>();
-        //services.AddScoped<IStorageService, StorageService>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddCache(this IServiceCollection services, IConfiguration configuration, AppService appService, bool isProduction)
+    {
+        services.AddSingleton<ICacheService, CacheService>();
+        services.AddSingleton<CacheService>();
+
+        if (isProduction)
+        {
+            var multiplexer = ConnectionMultiplexer.Connect(configuration.GetConnectionString("RedisConnection")!);
+            services.AddSingleton<IConnectionMultiplexer>(multiplexer);
+
+            services.AddStackExchangeRedisCache(options =>
+                options.ConnectionMultiplexerFactory = async () => await Task.FromResult(multiplexer));
+
+            services.AddDataProtection()
+            .PersistKeysToStackExchangeRedis(multiplexer, $"DataProtectionKey:{appService}");
+        }
+
+
+        services.AddHybridCache(config =>
+        {
+            config.MaximumPayloadBytes = 1024 * 1024;
+            config.MaximumKeyLength = 1024;
+            config.DefaultEntryOptions = new HybridCacheEntryOptions
+            {
+                Expiration = TimeSpan.FromMinutes(10),
+                LocalCacheExpiration = TimeSpan.FromMinutes(5)
+            };
+        });
+
 
         return services;
     }

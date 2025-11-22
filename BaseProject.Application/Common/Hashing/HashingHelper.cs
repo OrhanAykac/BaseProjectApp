@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace BaseProject.Application.Utilities.Hashing;
+namespace BaseProject.Application.Common.Hashing;
 internal static class HashingHelper
 {
     public static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)

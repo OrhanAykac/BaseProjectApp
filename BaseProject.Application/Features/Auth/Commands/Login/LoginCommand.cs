@@ -1,7 +1,7 @@
 ﻿using BaseProject.Application.Common.Abstract;
+using BaseProject.Application.Common.Hashing;
+using BaseProject.Application.Common.Results;
 using BaseProject.Application.Data;
-using BaseProject.Application.Utilities.Hashing;
-using BaseProject.Application.Utilities.Results;
 
 namespace BaseProject.Application.Features.Auth.Commands.Login;
 

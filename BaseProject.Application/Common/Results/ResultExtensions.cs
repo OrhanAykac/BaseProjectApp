@@ -1,4 +1,4 @@
-﻿namespace BaseProject.Application.Utilities.Results;
+﻿namespace BaseProject.Application.Common.Results;
 
 public static class ResultExtensions
 {
