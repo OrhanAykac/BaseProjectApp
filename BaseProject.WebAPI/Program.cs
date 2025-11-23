@@ -14,11 +14,11 @@ app.UseExceptionHandler();
 
 app.UseCors("AllowAll");
 
-MapEndpoints(app, isProduction);
+MapEndpoints(app);
 
 await app.RunAsync();
 
-static void MapEndpoints(WebApplication app, bool isProduction)
+static void MapEndpoints(WebApplication app)
 {
     foreach (IEndpoint endpoint in app.Services.GetRequiredService<IEnumerable<IEndpoint>>())
     {
