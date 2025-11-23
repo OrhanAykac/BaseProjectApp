@@ -32,12 +32,13 @@ public static class RegisterServices
         .AddInfrastructureServices(configuration, isProd, AppService.WebApi)
         .ConfigureApiDocument()
         .ConfigureAuthentication(configuration)
+        .ConfigureCors(configuration)
         .ConfigureRateLimiting(configuration);
 
         return services;
     }
 
-    private static IServiceCollection AddCors(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection ConfigureCors(this IServiceCollection services, IConfiguration configuration)
     {
         string allowedOrigins = configuration["AllowedOrigins"] ?? "";
 
@@ -46,7 +47,7 @@ public static class RegisterServices
             options.AddPolicy("AllowAll", policy =>
             {
                 policy
-                    .WithOrigins(allowedOrigins)
+                    .WithOrigins(allowedOrigins.Split(','))
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();

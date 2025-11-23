@@ -11,4 +11,8 @@ public class User : BaseEntity, IEntity
     public string ApiSecret { get; set; } = default!;
     public byte[] PasswordHash { get; set; } = default!;
     public byte[] PasswordSalt { get; set; } = default!;
+    public string? RefreshToken { get; set; }
+    public DateTime? RefreshTokenExpire { get; set; }
+
+    public Tenant Tenant { get; set; } = default!;
 }

@@ -42,7 +42,7 @@ public class BasicAuthenticationHandler(
 
             var userData = await appDbContextRO.Users
                 .Where(b => b.UserId == userId)
-                .Select(b => new { b.UserId, b.Email, b.IsActive, b.ApiSecret })
+                .Select(b => new { b.UserId, b.Email, b.IsActive, b.ApiSecret, b.TenantId })
                 .FirstOrDefaultAsync();
 
             if (userData is null)
@@ -54,7 +54,8 @@ public class BasicAuthenticationHandler(
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, userData.UserId.ToString()),
-                new Claim(ClaimTypes.Email, userData.Email)
+                new Claim(ClaimTypes.Email, userData.Email),
+                new Claim("TenantId", userData.TenantId.ToString())
             };
 
             var identity = new ClaimsIdentity(claims, Scheme.Name);

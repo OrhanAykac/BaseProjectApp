@@ -10,7 +10,7 @@ namespace BaseProject.Infrastructure.Utilities;
 
 public class TokenService(IConfiguration configuration) : ITokenService
 {
-    public string GenerateJwtToken(Guid userId, string email)
+    public string GenerateJwtToken(Guid userId, string email, Guid tenantId, string[] roles)
     {
         var jwtSettings = configuration.GetSection("JwtSettings");
 
@@ -23,9 +23,10 @@ public class TokenService(IConfiguration configuration) : ITokenService
         var claims = new List<Claim>
         {
             new (ClaimTypes.NameIdentifier, userId.ToString()),
-            new (ClaimTypes.Email, email)
+            new (ClaimTypes.Email, email),
+            new ("TenantId", tenantId.ToString()),
         };
-        //claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],
