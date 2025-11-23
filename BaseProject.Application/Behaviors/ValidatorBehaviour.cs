@@ -1,7 +1,4 @@
-﻿using BaseProject.Application.Common.Results;
-using FluentValidation;
-
-namespace BaseProject.Application.Behaviors;
+﻿namespace BaseProject.Application.Behaviors;
 
 public class ValidatorBehaviour<TRequest, TResponse>(IValidator<TRequest>? validator = null)
     : IPipelineBehavior<TRequest, TResponse>
@@ -17,7 +14,7 @@ public class ValidatorBehaviour<TRequest, TResponse>(IValidator<TRequest>? valid
             if (!result.IsValid)
             {
                 var errors = result.Errors.Select(s => s.ErrorMessage).ToList();
-                return (TResponse)(IResult)Result.Fail(errors);
+                return (TResponse)Result.Fail(errors);
             }
         }
 
@@ -25,14 +22,14 @@ public class ValidatorBehaviour<TRequest, TResponse>(IValidator<TRequest>? valid
     }
 }
 
-public class DataValidatorBehaviour<TRequest, TResponse, TData>(IValidator<TRequest>? validator = null)
- : IPipelineBehavior<TRequest, IDataResult<TData>>
-    where TRequest : IRequest<IDataResult<TData>>
-    where TResponse : IDataResult<TData>
+public class DataValidatorBehaviour<TRequest, TResponse>(IValidator<TRequest>? validator = null)
+ : IPipelineBehavior<TRequest, IDataResult<TResponse>>
+    where TRequest : IRequest<IDataResult<TResponse>>
+    where TResponse : IDataResult<TResponse>
 {
-    public async ValueTask<IDataResult<TData>> Handle(
+    public async ValueTask<IDataResult<TResponse>> Handle(
         TRequest message,
-        MessageHandlerDelegate<TRequest, IDataResult<TData>> next,
+        MessageHandlerDelegate<TRequest, IDataResult<TResponse>> next,
         CancellationToken c)
     {
         if (validator is not null)
@@ -42,7 +39,7 @@ public class DataValidatorBehaviour<TRequest, TResponse, TData>(IValidator<TRequ
             if (!result.IsValid)
             {
                 var errors = result.Errors.Select(s => s.ErrorMessage).ToList();
-                return (TResponse)(IResult)Result.Fail(errors);
+                return (TResponse)Result.Fail(errors);
             }
         }
 

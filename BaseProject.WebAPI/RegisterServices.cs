@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using System.Text;
 
 namespace BaseProject.WebAPI;
@@ -19,6 +18,9 @@ public static class RegisterServices
     public static IServiceCollection Bootstrapper(this IServiceCollection services, IConfiguration configuration, bool isProd)
     {
         services
+        .AddHealthChecks();
+
+        services
         .AddProblemDetails(options =>
         {
             options.CustomizeProblemDetails = (context) =>
@@ -26,11 +28,9 @@ public static class RegisterServices
                 context.ProblemDetails.Extensions.TryAdd("requestId", context.HttpContext.TraceIdentifier);
             };
         })
-        .AddOpenApi()
         .AddExceptionHandler<GlobalExceptionHandlerMiddleware>()
         .AddApplicationServices(configuration)
         .AddInfrastructureServices(configuration, isProd, AppService.WebApi)
-        .ConfigureApiDocument()
         .ConfigureAuthentication(configuration)
         .ConfigureCors(configuration)
         .ConfigureRateLimiting(configuration);
@@ -96,70 +96,6 @@ public static class RegisterServices
                 "Basic", _ => { });
 
         services.AddAuthorization();
-
-        return services;
-    }
-
-    private static IServiceCollection ConfigureApiDocument(this IServiceCollection services)
-    {
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(options =>
-        {
-            options.SwaggerDoc("v1", new OpenApiInfo
-            {
-                Title = "BaseProject API",
-                Version = "v1",
-                Description = "BaseProject Web API Documentation"
-            });
-            options.CustomSchemaIds(type => type.FullName);
-
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.ApiKey,
-                Scheme = "Bearer"
-            });
-
-            options.AddSecurityDefinition("Basic", new OpenApiSecurityScheme
-            {
-                Description = "Basic Authentication",
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.Http,
-                Scheme = "basic"
-            });
-
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    []
-                },
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Basic"
-                        }
-                    },
-                    []
-                }
-            });
-
-        });
-
-        services.AddEndpoints();
 
         return services;
     }

@@ -1,6 +1,4 @@
-﻿using BaseProject.Application.Common.Results;
-
-namespace BaseProject.Application.Behaviors;
+﻿namespace BaseProject.Application.Behaviors;
 
 public class ExceptionHandlingBehavior<TRequest, TResponse>(Serilog.ILogger logger)
     : IPipelineBehavior<TRequest, TResponse>
@@ -16,18 +14,18 @@ public class ExceptionHandlingBehavior<TRequest, TResponse>(Serilog.ILogger logg
         catch (Exception ex)
         {
             logger.Error(ex, "An error occurred while processing {RequestName}", typeof(TRequest).Name);
-            return (TResponse)(IResult)Result.Fail($"An error occurred while processing {typeof(TRequest).Name}");
+            return (TResponse)Result.Fail($"An error occurred while processing {typeof(TRequest).Name}");
         }
     }
 }
-public class DataExceptionHandlingBehavior<TRequest, TResponse, TData>(Serilog.ILogger logger)
-    : IPipelineBehavior<TRequest, IDataResult<TData>>
+public class DataExceptionHandlingBehavior<TRequest, TResponse>(Serilog.ILogger logger)
+    : IPipelineBehavior<TRequest, IDataResult<TResponse>>
         where TRequest : class, IBaseRequest
-        where TResponse : IDataResult<TData>
+        where TResponse : IDataResult<TResponse>
 {
-    public async ValueTask<IDataResult<TData>> Handle(
+    public async ValueTask<IDataResult<TResponse>> Handle(
         TRequest message,
-        MessageHandlerDelegate<TRequest, IDataResult<TData>> next,
+        MessageHandlerDelegate<TRequest, IDataResult<TResponse>> next,
         CancellationToken cancellationToken)
     {
         try
@@ -37,7 +35,7 @@ public class DataExceptionHandlingBehavior<TRequest, TResponse, TData>(Serilog.I
         catch (Exception ex)
         {
             logger.Error(ex, "An error occurred while processing {RequestName}", typeof(TRequest).Name);
-            return (TResponse)(IResult)Result.Fail($"An error occurred while processing {typeof(TRequest).Name}");
+            return (TResponse)Result.Fail($"An error occurred while processing {typeof(TRequest).Name}");
         }
     }
 }
