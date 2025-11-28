@@ -40,14 +40,14 @@ public static class RegisterServices
 
     private static IServiceCollection ConfigureCors(this IServiceCollection services, IConfiguration configuration)
     {
-        string allowedOrigins = configuration["AllowedOrigins"] ?? "";
+        string[] allowedOrigins = (configuration["AllowedOrigins"] ?? "").Split(',');
 
         services.AddCors(options =>
         {
             options.AddPolicy("AllowAll", policy =>
             {
                 policy
-                    .WithOrigins(allowedOrigins.Split(','))
+                    .WithOrigins(allowedOrigins)
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
