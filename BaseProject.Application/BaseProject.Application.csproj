@@ -29,8 +29,4 @@
 	  <ProjectReference Include="..\BaseProject.Infrastructure.Contract\BaseProject.Infrastructure.Contract.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Common\Extentions\" />
-	</ItemGroup>
-
 </Project>
