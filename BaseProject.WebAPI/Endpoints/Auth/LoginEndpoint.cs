@@ -1,4 +1,5 @@
 ﻿using BaseProject.Application.Features.Auth.Commands.Login;
+using BaseProject.WebAPI.Extentions;
 using Mediator;
 
 namespace BaseProject.WebAPI.Endpoints.Auth;
@@ -14,10 +15,7 @@ public class LoginEndpoint : IEndpoint
             {
                 var response = await sender.Send(command);
 
-                if (response is null)
-                    return Results.NotFound("User not found");
-
-                return Results.Ok(response);
+                return response.ToResult();
             });
     }
 }

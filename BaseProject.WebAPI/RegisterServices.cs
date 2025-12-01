@@ -3,9 +3,9 @@ using BaseProject.Domain.Enums;
 using BaseProject.Infrastructure;
 using BaseProject.WebAPI.Authentication;
 using BaseProject.WebAPI.Endpoints;
+using BaseProject.WebAPI.Middlewares;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
@@ -124,36 +124,4 @@ public static class RegisterServices
         return services;
     }
 
-}
-
-internal sealed class GlobalExceptionHandlerMiddleware(
-    IProblemDetailsService problemDetailsService,
-    ILogger<GlobalExceptionHandlerMiddleware> logger) : IExceptionHandler
-{
-    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception ex, CancellationToken c)
-    {
-        logger.LogError(ex, "Unhandled exception occurred");
-
-        // Make sure to set the status code before writing to the response body
-        httpContext.Response.StatusCode = ex switch
-        {
-            ApplicationException => StatusCodes.Status400BadRequest,
-            _ => StatusCodes.Status500InternalServerError
-        };
-
-        await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
-        {
-            HttpContext = httpContext,
-            Exception = ex,
-            ProblemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
-            {
-                Type = ex.GetType().Name,
-                Title = "An error occurred",
-                Detail = ex.Message,
-            }
-        })
-            .ConfigureAwait(false);
-
-        return true;
-    }
 }

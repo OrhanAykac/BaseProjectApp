@@ -1,4 +1,5 @@
 ﻿using BaseProject.Application.Features.User.Command.AddUser;
+using BaseProject.WebAPI.Extentions;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +17,6 @@ public class AddUserEndpoint : IEndpoint
             .MapPost("add-user", [Authorize(AuthenticationSchemes = "Bearer,Basic")]
         async (ISender sender, ClaimsPrincipal claims, [FromBody] AddUserCommandModel req, CancellationToken c) =>
             {
-                //Example of getting user info from claims. Can make extentions methods for this if needed often.
                 var userId = claims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
                 var command = new AddUserCommand(
@@ -29,7 +29,7 @@ public class AddUserEndpoint : IEndpoint
 
                 var response = await sender.Send(command, c);
 
-                return response;
+                return response.ToResult();
             });
     }
 }

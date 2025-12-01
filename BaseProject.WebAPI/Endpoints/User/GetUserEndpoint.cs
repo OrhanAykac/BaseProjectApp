@@ -1,4 +1,5 @@
 ﻿using BaseProject.Application.Features.User.Queries.GetUsers;
+using BaseProject.WebAPI.Extentions;
 using Mediator;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +18,7 @@ public class GetUserEndpoint : IEndpoint
             {
                 var response = await sender.Send(query, c);
 
-                return response;
+                return response.ToResult();
             });
     }
 }
