@@ -1,15 +1,12 @@
-﻿using BaseProject.Application.Common.Abstract;
-using BaseProject.Application.Common.Hashing;
-using BaseProject.Application.Common.Results;
-using BaseProject.Application.Data;
+﻿using BaseProject.Application.Common.Hashing;
 
 namespace BaseProject.Application.Features.User.Command.AddUser;
 
-public record AddUserCommand(string Email, string Password, string FirstName, string LastName, bool IsActive, Guid ProcessedBy) : IRequest<IResult>;
+public record AddUserCommand(string Email, string Password, string FirstName, string LastName, bool IsActive, Guid ProcessedBy) : IRequest<Result>;
 
-internal sealed class AddUserCommandHandler(IAppDbContext appDbContext, ITokenService tokenService) : IRequestHandler<AddUserCommand, IResult>
+internal sealed class AddUserCommandHandler(IAppDbContext appDbContext, ITokenService tokenService) : IRequestHandler<AddUserCommand, Result>
 {
-    public async ValueTask<IResult> Handle(AddUserCommand request, CancellationToken cancellationToken)
+    public async ValueTask<Result> Handle(AddUserCommand request, CancellationToken cancellationToken)
     {
         var userEntity = request.Adapt<Domain.Concrete.User>();
 

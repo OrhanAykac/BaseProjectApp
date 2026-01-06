@@ -1,73 +1,92 @@
 ﻿namespace BaseProject.Application.Common.Results;
 
-public class Result : IResult
+public class Result
 {
-    public bool IsSuccess { get; protected set; }
-    public string Message { get; protected set; }
-    public List<string> Errors { get; protected set; }
+    public bool IsSuccess { get; }
+    public IReadOnlyList<string> Errors { get; }
 
-    protected Result(bool isSuccess = true, string? message = null, List<string>? errors = null)
+    protected Result(bool isSuccess, IReadOnlyList<string>? errors = null)
     {
         IsSuccess = isSuccess;
-        Message = message ?? string.Empty;
         Errors = errors ?? [];
     }
 
-    public static IResult Success() => new Result();
+    #region Base
 
-    public static IResult Success(string message) => new Result(true, message);
+    public static Result Success() => new(true);
 
-    public static IResult Fail() => new Result(false);
+    public static Result Fail() => new(false);
 
-    public static IResult Fail(string message) => new Result(false, message);
+    public static Result Fail(string error) =>
+        new(false, [error]);
 
-    public static IResult Fail(List<string> errors) => new Result(false, null, errors);
+    public static Result Fail(params string[] errors) =>
+        new(false, errors);
 
-    public static IResult Fail(string message, List<string> errors) => new Result(false, message, errors);
+    public static Result Fail(Exception exception) =>
+        new(false, [exception.Message]);
 
-    public static IDataResult<T> Success<T>(T data) => new DataResult<T>(data, true);
+    #endregion
 
-    public static IDataResult<T> Success<T>(T data, string message) => new DataResult<T>(data, true, message);
+    #region DataResult
 
-    public static IDataResult<T> Success<T>(T data, int pageIndex, int pageSize, int totalCount) =>
-        new PaggingDataResult<T>(data, pageIndex, pageSize, totalCount, true);
+    public static DataResult<T?> Success<T>(T data) =>
+        new(data, true);
 
-    public static IDataResult<T> Success<T>(T data, int pageIndex, int pageSize, int totalCount, string message) =>
-    new PaggingDataResult<T>(data, pageIndex, pageSize, totalCount, true, message);
+    public static DataResult<T?> Fail<T>(string error) =>
+        new(default, false, [error]);
 
+    public static DataResult<T?> Fail<T>(IReadOnlyList<string> errors) =>
+        new(default, false, errors);
 
-    public static IDataResult<T> Fail<T>() => new DataResult<T>(default!, false);
+    #endregion
 
-    public static IDataResult<T> Fail<T>(string message) => new DataResult<T>(default!, false, message);
+    #region PagedDataResult
 
-    public static IDataResult<T> Fail<T>(List<string> errors) => new DataResult<T>(default!, false, null, errors);
+    public static PagedDataResult<T?> Success<T>(
+        T data,
+        int pageIndex,
+        int pageSize,
+        int totalCount)
+        => new(data, pageIndex, pageSize, totalCount, true);
 
-    public static IDataResult<T> Fail<T>(string message, List<string> errors) => new DataResult<T>(default!, false, message, errors);
+    public static PagedDataResult<T?> FailPaged<T>(string error) =>
+        new(default, 0, 0, 0, false, [error]);
+
+    public static PagedDataResult<T?> FailPaged<T>(IReadOnlyList<string> errors) =>
+        new(default, 0, 0, 0, false, errors);
+
+    #endregion
 }
 
-public class DataResult<T> : Result, IDataResult<T>
-{
-    public T Data { get; private set; }
 
-    internal DataResult(T data, bool isSuccess = true, string? message = null, List<string>? errors = null)
-        : base(isSuccess, message, errors)
-    {
-        Data = data;
-    }
+public class DataResult<T>(
+    T? data,
+    bool isSuccess,
+    IReadOnlyList<string>? errors = null)
+{
+    public T? Data { get; } = data;
+    public bool IsSuccess { get; } = isSuccess;
+    public IReadOnlyList<string> Errors { get; } = errors ?? [];
 }
-public class PaggingDataResult<T> : DataResult<T>, IPaggingDataResult<T>
-{
-    public int PageIndex { get; set; }
-    public int PageSize { get; set; }
-    public int TotalCount { get; set; }
-    public int TotalPages => (int)System.Math.Ceiling(TotalCount / (double)PageSize);
 
-    internal PaggingDataResult(
-        T data, int pageIndex, int pageSize, int totalCount, bool isSuccess = true, string? message = null, List<string>? errors = null)
-        : base(data, isSuccess, message, errors)
-    {
-        PageIndex = pageIndex;
-        PageSize = pageSize;
-        TotalCount = totalCount;
-    }
+public class PagedDataResult<T>(
+    T? data,
+    int pageIndex,
+    int pageSize,
+    int totalCount,
+    bool isSuccess,
+    IReadOnlyList<string>? errors = null)
+{
+
+    public T? Data { get; } = data;
+    public bool IsSuccess { get; } = isSuccess;
+    public IReadOnlyList<string> Errors { get; } = errors ?? [];
+
+    public int PageIndex { get; } = pageIndex;
+    public int PageSize { get; } = pageSize;
+    public int TotalCount { get; } = totalCount;
+
+    public int TotalPages =>
+        PageSize <= 0 ? 0 : (int)Math.Ceiling(TotalCount / (double)PageSize);
 }

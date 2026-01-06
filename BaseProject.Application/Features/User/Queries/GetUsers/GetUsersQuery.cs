@@ -1,13 +1,11 @@
-﻿using BaseProject.Application.Common.Abstract;
-using BaseProject.Application.Common.Requests;
-using BaseProject.Application.Common.Results;
+﻿using BaseProject.Application.Common.Requests;
 
 namespace BaseProject.Application.Features.User.Queries.GetUsers;
 
-public record GetUsersQuery(BaseFilterRequest Filter)
-    : ICacheableRequest<IDataResult<IEnumerable<GetUsersResponse>>>
+public class GetUsersQuery
+    : BaseFilterRequest, ICacheableRequest<DataResult<List<GetUsersResponse>?>>
 {
-    public string CacheKey => $"User_GetUsers_{Filter.CacheKeyDefaultSuffix}";
+    public string CacheKey => $"User_{nameof(GetUsersQuery)}_{this.CacheKeyDefaultSuffix}";
     public IEnumerable<string>? Tags => ["User"];
     public TimeSpan? Duration => TimeSpan.FromMinutes(10);
 }

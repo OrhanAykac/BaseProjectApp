@@ -1,34 +1,19 @@
-﻿using BaseProject.Application.Common.Requests;
-using BaseProject.Application.Common.Results;
-using BaseProject.Application.Data;
+﻿namespace BaseProject.Application.Features.User.Queries.GetUsers;
 
-namespace BaseProject.Application.Features.User.Queries.GetUsers;
-
-internal sealed class GetUsersQueryHandler(IAppDbContextRO appDbContext)
-    : IRequestHandler<GetUsersQuery, IDataResult<IEnumerable<GetUsersResponse>>>
+internal sealed class GetUsersQueryHandler()
+    : IRequestHandler<GetUsersQuery, DataResult<List<GetUsersResponse>?>>
 {
-    public async ValueTask<IDataResult<IEnumerable<GetUsersResponse>>> Handle(
+    public async ValueTask<DataResult<List<GetUsersResponse>?>> Handle(
         GetUsersQuery request, CancellationToken c)
     {
-        var filter = request.Filter;
-
-        var query = appDbContext.Users
-            .ApplyOnlyActive(filter);
-
-        if (!string.IsNullOrEmpty(filter.SearchParam))
+        var users = new List<GetUsersResponse>()
         {
-            query = query.Where(u =>
-                u.FirstName.Contains(filter.SearchParam));
-        }
-
-        var totalCount = await query.CountAsync(c);
-
-        var users = await query
-             .ApplyPaginate(filter)
-             .ProjectToType<GetUsersResponse>()
-             .OrderByDescending(o => o.CreatedAt)
-             .ToListAsync(c);
-
-        return Result.Success(users, filter.PageIndex, filter.PageSize, totalCount);
+            new()
+            {
+                UserId = Guid.NewGuid(),
+                Email = ""
+            }
+        };
+        return Result.Success(users);
     }
 }

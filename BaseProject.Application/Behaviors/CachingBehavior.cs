@@ -1,20 +1,26 @@
-﻿using BaseProject.Application.Common.Abstract;
+﻿namespace BaseProject.Application.Behaviors;
 
-namespace BaseProject.Application.Behaviors;
-
-public class CachingBehavior<TRequest, TResponse>(ICacheService cache) : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : ICacheableRequest<TResponse>
+public class CachingBehavior<TRequest, TData>(ICacheService cache)
+    : IPipelineBehavior<TRequest, TData>
+    where TRequest : ICacheableRequest<TData>
 {
-    public async ValueTask<TResponse> Handle(TRequest message, MessageHandlerDelegate<TRequest, TResponse> next, CancellationToken c)
+    public async ValueTask<TData> Handle(
+        TRequest message,
+        MessageHandlerDelegate<TRequest, TData> next,
+        CancellationToken c)
     {
-        var duration = message.Duration ?? TimeSpan.FromMinutes(10);
-
-        return await cache.GetOrCreateAsync(
-            key: message!.CacheKey!,
-             (message, next, obj: this),
+        var cached = await cache.GetOrCreateAsync(
+            message.CacheKey,
+            (message, next),
             static async (state, token) =>
-             await state.next(state.message, token),
-            tags: message.Tags,
-         cancellationToken: c);
+            {
+                var result = await state.next(state.message, token);
+                return result;
+            },
+            message.Duration,
+            message.Tags,
+            c);
+
+        return cached;
     }
 }

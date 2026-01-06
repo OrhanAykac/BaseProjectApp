@@ -31,6 +31,7 @@ public static class RegisterServices
         .AddExceptionHandler<GlobalExceptionHandlerMiddleware>()
         .AddApplicationServices(configuration)
         .AddInfrastructureServices(configuration, isProd, AppService.WebApi)
+        .AddEndpoints()
         .ConfigureAuthentication(configuration)
         .ConfigureCors(configuration)
         .ConfigureRateLimiting(configuration);

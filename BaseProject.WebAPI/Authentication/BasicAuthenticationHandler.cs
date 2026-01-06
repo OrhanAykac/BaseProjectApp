@@ -1,3 +1,4 @@
+using BaseProject.Application.Constants;
 using BaseProject.Application.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
@@ -32,13 +33,13 @@ public class BasicAuthenticationHandler(
             string[] credentials = decodedCredentials.Split(':', 2);
 
             if (credentials.Length != 2)
-                return AuthenticateResult.Fail("Invalid Basic authentication format");
+                return AuthenticateResult.Fail(Messages.Auth.InvalidBasicAuthenticationFormat);
 
             string userIdStr = credentials[0];
             string apiSecret = credentials[1];
 
             if (!Guid.TryParse(userIdStr, out Guid userId))
-                return AuthenticateResult.Fail("Invalid ApiKey");
+                return AuthenticateResult.Fail(Messages.Auth.InvalidApiKey);
 
             var userData = await appDbContextRO.Users
                 .Where(b => b.UserId == userId)
@@ -46,10 +47,10 @@ public class BasicAuthenticationHandler(
                 .FirstOrDefaultAsync();
 
             if (userData is null)
-                return AuthenticateResult.Fail("Invalid credentials");
+                return AuthenticateResult.Fail(Messages.Auth.InvalidCredentials);
 
             if (!userData.IsActive)
-                return AuthenticateResult.Fail("User is inactive.");
+                return AuthenticateResult.Fail(Messages.User.UserInactive);
 
             var claims = new[]
             {
@@ -66,8 +67,8 @@ public class BasicAuthenticationHandler(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error during basic authentication");
-            return AuthenticateResult.Fail("Authentication error");
+            Logger.LogError(ex, Messages.Log.ErrorDuringBasicAuthentication);
+            return AuthenticateResult.Fail(Messages.Auth.AuthenticationError);
         }
     }
 }

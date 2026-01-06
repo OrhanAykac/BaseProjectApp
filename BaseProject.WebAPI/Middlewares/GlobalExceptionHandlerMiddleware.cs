@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+﻿using BaseProject.Application.Constants;
+using Microsoft.AspNetCore.Diagnostics;
 
 namespace BaseProject.WebAPI.Middlewares;
 
@@ -8,7 +9,7 @@ internal sealed class GlobalExceptionHandlerMiddleware(
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception ex, CancellationToken c)
     {
-        logger.LogError(ex, "Unhandled exception occurred");
+        logger.LogError(ex, Messages.Log.UnhandledExceptionOccurred);
 
         // Make sure to set the status code before writing to the response body
         httpContext.Response.StatusCode = ex switch
@@ -24,7 +25,7 @@ internal sealed class GlobalExceptionHandlerMiddleware(
             ProblemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
             {
                 Type = ex.GetType().Name,
-                Title = "An error occurred",
+                Title = Messages.Error.AnErrorOccurred,
                 Detail = ex.Message,
             }
         })

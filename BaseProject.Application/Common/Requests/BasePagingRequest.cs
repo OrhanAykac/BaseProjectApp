@@ -2,7 +2,7 @@
 
 namespace BaseProject.Application.Common.Requests;
 
-public class BaseFilterRequest<T> : BaseFilterRequest
+public abstract class BaseFilterRequest<T> : BaseFilterRequest
 {
     public T FilterData { get; set; } = default!;
 }

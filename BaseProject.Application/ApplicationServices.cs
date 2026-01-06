@@ -6,7 +6,7 @@ namespace BaseProject.Application;
 
 public static class ApplicationServices
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration _)
     {
         MapsterMappingConfig.Configure();
 
@@ -14,13 +14,11 @@ public static class ApplicationServices
 
         services.AddMediator(o => o.ServiceLifetime = ServiceLifetime.Scoped);
 
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidatorBehaviour<,>));
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DataValidatorBehaviour<,>));
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(PerformanceBehavior<,>));
-
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ExceptionHandlingBehavior<,>));
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(DataExceptionHandlingBehavior<,>));
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(PerformanceBehavior<,>));
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidatorBehaviour<,>));
 
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(CachingBehavior<,>));
         return services;
     }
 }
